@@ -60,4 +60,8 @@ public class Server {
 		clients.forEach((k, v)->v.send(message));
 		System.out.println(message.from+"->all:"+message.message);
 	}
+	
+	public void remove(String name){
+		clients.remove(name);
+	}
 }

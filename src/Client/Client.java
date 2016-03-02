@@ -15,6 +15,7 @@ public class Client {
 	private ObjectOutputStream os;
 	private ObjectInputStream is;
 	private boolean running = true;
+	private Thread receiveThread;
 	
 	public Client(String ip, int port, String name){
 		try {
@@ -22,7 +23,7 @@ public class Client {
 			socket = new Socket(ip, port);
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
-			new Thread(new Runnable() {				
+			receiveThread = new Thread(new Runnable() {				
 				public void run() {
 					while(running){
 						try {
@@ -32,8 +33,8 @@ public class Client {
 						}
 					}
 				}
-			}).start();
-			
+			});
+			receiveThread.start();			
 			Packet p = new Packet();
 			p.packetType=PacketType.LOGIN;
 			p.message=name;
@@ -58,6 +59,7 @@ public class Client {
 					p = new Packet();
 					p.packetType=PacketType.LOGOUT;
 					running = false;
+					receiveThread.stop();
 				}else{
 					p = new Packet();
 					p.packetType=PacketType.MESSAGE;

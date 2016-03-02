@@ -32,6 +32,7 @@ public class Client {
 						Packet p = (Packet) is.readObject();
 						if(p.packetType==PacketType.LOGOUT){
 							running = false;
+							server.remove(name);
 							is.close();
 							os.close();
 							socket.close();
