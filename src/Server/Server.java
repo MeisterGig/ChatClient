@@ -32,6 +32,7 @@ public class Server {
 				if(!clients.containsKey(name)){
 					Client client = new Client(this, name, is, os, socket);
 					clients.put(name, client);
+					client.start();
 				}else{
 					Packet p = new Packet();
 					p.packetType = PacketType.LOGOUT;
@@ -49,10 +50,14 @@ public class Server {
 	
 	public void sendMessage(String name,Packet message){
 		Client c = clients.get(name);
-		if(c!=null)c.send(message);
+		if(c!=null){
+			c.send(message);
+			System.out.println(message.from+"->"+message.target+":"+message.message);
+		}
 	}
 	
 	public void sendToAll(Packet message){
 		clients.forEach((k, v)->v.send(message));
+		System.out.println(message.from+"->all:"+message.message);
 	}
 }
