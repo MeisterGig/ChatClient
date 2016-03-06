@@ -14,18 +14,20 @@ public class Client {
 	private Socket socket;
 	private ObjectOutputStream os;
 	private ObjectInputStream is;
-	private boolean running = true;
 	private Thread receiveThread;
 	
-	public Client(String ip, int port, String name){
+	private ClientInterface clientInterface;
+	
+	public Client(String ip, int port, String name, ClientInterface clientInterface){
 		try {
 			this.name = name;
+			this.clientInterface = clientInterface;
 			socket = new Socket(ip, port);
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
 			receiveThread = new Thread(new Runnable() {				
 				public void run() {
-					while(running){
+					while(true){
 						try {
 							receive((Packet)is.readObject());
 						} catch (ClassNotFoundException | IOException e) {
@@ -44,51 +46,52 @@ public class Client {
 		}
 	}
 	
-	public void start(){
-		Scanner scanner = new Scanner(System.in);
-		while(running){
-			String[] message = scanner.next().split(";");
-			if(message.length>=2){
-				Packet p;
-				if(message[0].equals("*")){
-					p = new Packet();
-					p.packetType=PacketType.BROADCAST;
-					p.message=message[1];
-					p.from = name;
-				}else if(message[0].equals("logout")){
-					p = new Packet();
-					p.packetType=PacketType.LOGOUT;
-					running = false;
-					receiveThread.stop();
-				}else{
-					p = new Packet();
-					p.packetType=PacketType.MESSAGE;
-					p.target=message[0];
-					p.message=message[1];
-					p.from=name;
-				}
-				try {
-					os.writeObject(p);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+	public void sendMessage(String target, String message){
+		Packet p = new Packet();
+		p.packetType=PacketType.MESSAGE;
+		p.target=target;
+		p.message=message;
+		p.from=name;
+		sendPacket(p);
+	}
+	
+	public void sendBroadcast(String message){
+		Packet p = new Packet();
+		p.packetType=PacketType.BROADCAST;
+		p.message=message;
+		p.from = name;
+		sendPacket(p);
+	}
+	
+	public void logout(){
+		Packet p = new Packet();
+		p.packetType=PacketType.LOGOUT;
+		receiveThread.stop();
+		sendPacket(p);
 		close();
-		scanner.close();
+	}
+	
+	private void sendPacket(Packet p){
+		try {
+			os.writeObject(p);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void receive(Packet packet){
 		if(packet.packetType==PacketType.LOGOUT){
 			close();
-		}else if(packet.packetType==PacketType.MESSAGE|| packet.packetType==PacketType.BROADCAST){
-			System.out.println(packet.from + ":" + packet.message);
+			clientInterface.logout();
+		}else if(packet.packetType==PacketType.MESSAGE){
+			clientInterface.receiveMessage(packet);
+		}else if(packet.packetType==PacketType.BROADCAST){
+			clientInterface.receiveBroadcast(packet);
 		}
 	}
 	
 	public void close(){
 		try {
-			running = false;
 			is.close();
 			os.close();
 			socket.close();
