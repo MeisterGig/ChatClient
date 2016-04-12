@@ -42,7 +42,8 @@ public class Client {
 							server.sendToAll(p);
 						}
 					} catch (ClassNotFoundException | IOException e) {
-						e.printStackTrace();
+						running = false;
+						server.remove(name);
 					}
 				}
 			}

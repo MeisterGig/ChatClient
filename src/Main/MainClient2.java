@@ -33,7 +33,7 @@ public class MainClient2 {
 		
 		Scanner scanner = new Scanner(System.in);
 		while(running){
-			String[] message = scanner.next().split(";");
+			String[] message = scanner.nextLine().split(";");
 			if(message.length>=2){
 				if(message[0].equals("*")){
 					c.sendBroadcast(message[1]);
