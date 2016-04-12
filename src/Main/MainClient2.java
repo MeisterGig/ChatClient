@@ -10,8 +10,8 @@ public class MainClient2 {
 	static boolean running = true;
 
 	public static void main(String[] args) {
-		
 		Client c = new Client("localhost", 1000, "MainClient2", new ClientInterface() {
+
 			@Override
 			public void receiveMessage(Packet p) {
 				System.out.println(p.from + ": " + p.message);
@@ -28,6 +28,8 @@ public class MainClient2 {
 				running = false;
 			}
 		});
+		
+		boolean running = true;
 		
 		Scanner scanner = new Scanner(System.in);
 		while(running){

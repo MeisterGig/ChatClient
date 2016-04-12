@@ -57,7 +57,7 @@ public class Server {
 	}
 	
 	public void sendToAll(Packet message){
-		clients.forEach((k, v)->v.send(message));
+		//clients.forEach((k, v)->v.send(message));
 		System.out.println(message.from+"->all:"+message.message);
 	}
 	
