@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
 
 import Common.Packet;
 import Common.PacketType;
@@ -63,6 +62,7 @@ public class Client {
 		sendPacket(p);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void logout(){
 		Packet p = new Packet();
 		p.packetType=PacketType.LOGOUT;

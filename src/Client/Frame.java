@@ -146,7 +146,6 @@ public class Frame {
 		
 		userList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println(e);
                 JComboBox selectedChoice = (JComboBox) e.getSource();
                 recieveMessages((String) selectedChoice.getSelectedItem());
 			}
