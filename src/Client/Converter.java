@@ -9,20 +9,41 @@ import java.io.IOException;
 
 public class Converter {
 	private Frame frame;
+	private Client client;
 	
 	public Converter(String ip, String username, Frame fr){
 		frame=fr;
+		client=new Client(ip,24498,username,this);
 	}
 
 	public void sendFile(String to, String path) {
-		//TODO
+		client.sendFile(to, path);
 	}
 
 	public void sendMessage(String to, String message) {
-		addMessage(to, "<div align=\"right\">"+message+" </div> <br>");
+		addMessage(to, "<div color=\"blue\" align=\"right\">"+message+" </div> <br>");
 		frame.refreshMessages(to, loadMessages(to));
-		System.out.println(message);
-		// TODO 
+		client.sendMessage(to, message);
+		
+	}
+	
+	public void receiveClients(String clients[]){
+		frame.receiveClients(clients);
+	}
+	
+
+	public void receiveFile(String from, String path) {
+		addMessage(from, "<div color=\"blue\" align=\"right\">Datei bekommen unter: "+path+" </div> <br>");
+		frame.refreshMessages(from, loadMessages(from));
+	}
+	
+	public void receiveMessage(String from, String message){
+		addMessage(from, "<div color=\"blue\" align=\"right\">"+message+" </div> <br>");
+		frame.refreshMessages(from, loadMessages(from));
+	}
+	
+	public void logoutByServer() {
+		System.exit(1);
 		
 	}
 	
@@ -31,13 +52,17 @@ public class Converter {
 		File file = new File("Chat/history/"+user+".chat"); // Alle Werte werden in eine log Datei gespeichert.
 		
 		try {
+			File dirChat = new File("Chat");
+			if(dirChat.exists()== false){
+				dirChat.mkdir();
+			}
 			File dirHistory = new File("Chat/history");
 			if(dirHistory.exists()== false){
 				dirHistory.mkdir();
 			}
 			if (file.exists() == false) {
 				file.createNewFile();
-				System.err.println("Log-Datei erstellt");
+				System.err.println("Datei erstellt!");
 			}
 			
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
@@ -46,6 +71,7 @@ public class Converter {
 			writer.write(message);
     	    writer.newLine();
     	    writer.flush();
+    	    writer.close();
 			
 		} catch (IOException e) {
 			System.err.println("Es konnte keine Chat-Datei erstellt werden!");
@@ -58,13 +84,17 @@ public class Converter {
 		
 		File file = new File("Chat/history/"+user+".chat"); // Alle Werte werden in eine log Datei gespeichert.
 		try {
+			File dirChat = new File("Chat");
+			if(dirChat.exists()== false){
+				dirChat.mkdir();
+			}
 			File dirHistory = new File("Chat/history");
 			if(dirHistory.exists()== false){
 				dirHistory.mkdir();
 			}
 			if (file.exists() == false) {
 				file.createNewFile();
-				System.err.println("Log-Datei erstellt");
+				System.err.println("Datei erstellt!");
 			}
 		} catch (IOException e) {
 			System.err.println("Es konnte keine Chat-Datei erstellt werden!");
@@ -85,7 +115,7 @@ public class Converter {
 		    return messages;
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Es konnte keine Chat-Datei geladen werden!");
 		}
 		
 		return null;

@@ -1,9 +1,13 @@
 package Client;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
 
 import Common.Packet;
 import Common.PacketType;
@@ -15,12 +19,18 @@ public class Client {
 	private ObjectInputStream is;
 	private Thread receiveThread;
 	
-	private ClientInterface clientInterface;
+	private Encryption encryption;
+	private HashMap<String, byte[]> publicKeys; 
 	
-	public Client(String ip, int port, String name, ClientInterface clientInterface){
+	private Converter converter;
+	
+	public Client(String ip, int port, String name, Converter converter){
 		try {
+			encryption = new Encryption();
+			publicKeys = new HashMap<String, byte[]>();
+			
 			this.name = name;
-			this.clientInterface = clientInterface;
+			this.converter = converter;
 			socket = new Socket(ip, port);
 			os = new ObjectOutputStream(socket.getOutputStream());
 			is = new ObjectInputStream(socket.getInputStream());
@@ -38,7 +48,8 @@ public class Client {
 			receiveThread.start();			
 			Packet p = new Packet();
 			p.packetType=PacketType.LOGIN;
-			p.message=name;
+			p.from=name;
+			p.message=encryption.getEncodedOwnPublicKey();
 			os.writeObject(p);			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -46,26 +57,72 @@ public class Client {
 	}
 	
 	public void sendMessage(String target, String message){
-		Packet p = new Packet();
-		p.packetType=PacketType.MESSAGE;
-		p.target=target;
-		p.message=message;
-		p.from=name;
-		sendPacket(p);
+		if(publicKeys.containsKey(target)){
+			Packet p = new Packet();
+			p.packetType=PacketType.MESSAGE;
+			p.target=target;
+			p.message=encryption.encryptString(message, publicKeys.get(target));
+			p.from=name;
+			sendPacket(p);
+		}
 	}
 	
-	public void sendBroadcast(String message){
-		Packet p = new Packet();
-		p.packetType=PacketType.BROADCAST;
-		p.message=message;
-		p.from = name;
-		sendPacket(p);
+	public void sendFile(String target, String path){
+		if(publicKeys.containsKey(target)){
+			try {
+				File file = new File(path);
+				FileInputStream fis = new FileInputStream(path);
+				byte[] data = new byte[(int) file.length()];
+				fis.read(data);
+				fis.close();
+				
+				Packet p = new Packet();
+				p.packetType = PacketType.FILE;
+				p.filename = file.getName();
+				p.message =data;
+				p.from = name;
+				p.target = target;
+				sendPacket(p);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void receiveFile(Packet p){
+		try {
+			File dirChat = new File("Chat");
+			if(dirChat.exists()== false){
+				dirChat.mkdir();
+			}
+			File dirHistory = new File("Chat/File");
+			if(dirHistory.exists()== false){
+			    dirHistory.mkdir();
+			}
+			
+			String filename = p.filename;
+			File f = new File("Chat/File/" + filename);
+			if(!f.exists()){
+				f.createNewFile();
+			}else{
+				f.delete();
+				f.createNewFile();
+			}
+			
+			FileOutputStream fos = new FileOutputStream(f);
+			fos.write(p.message);
+			fos.close();
+			
+			converter.receiveFile(p.from,filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void logout(){
 		Packet p = new Packet();
-		p.packetType=PacketType.LOGOUT;
+		p.packetType=PacketType.LOGOUT_BY_SERVER;
 		receiveThread.stop();
 		sendPacket(p);
 		close();
@@ -80,13 +137,19 @@ public class Client {
 	}
 	
 	public void receive(Packet packet){
-		if(packet.packetType==PacketType.LOGOUT){
+		if(packet.packetType==PacketType.LOGIN){
+			publicKeys.put(packet.from, packet.message);
+			converter.receiveClients(publicKeys.keySet().toArray(new String[publicKeys.size()]));
+		}else if(packet.packetType==PacketType.LOGOUT){
+			publicKeys.remove(packet.from);
+			converter.receiveClients(publicKeys.keySet().toArray(new String[publicKeys.size()]));
+		}else if(packet.packetType==PacketType.LOGOUT_BY_SERVER){
 			close();
-			clientInterface.logout();
+			converter.logoutByServer();
 		}else if(packet.packetType==PacketType.MESSAGE){
-			clientInterface.receiveMessage(packet);
-		}else if(packet.packetType==PacketType.BROADCAST){
-			clientInterface.receiveBroadcast(packet);
+			converter.receiveMessage(packet.from,encryption.decryptString(packet.message));
+		}else if(packet.packetType==PacketType.FILE){
+			receiveFile(packet);
 		}
 	}
 	

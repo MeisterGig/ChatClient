@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -44,9 +45,9 @@ public class Frame {
 	 * Create the application.
 	 */
 	public Frame() {
-		//String ip = JOptionPane.showInputDialog("Server IP:");
-		//String username = JOptionPane.showInputDialog("Username:");
-		con = new Converter("localhost", "Client", this);
+		String ip = JOptionPane.showInputDialog("Server IP:");
+		String username = JOptionPane.showInputDialog("Username:");
+		con = new Converter(ip, username, this);
 		initialize();
 	}
 
@@ -57,8 +58,6 @@ public class Frame {
 		frmChat.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		userList = new JComboBox();
-		userList.addItem("Test");
-		userList.addItem("Test2");
 		
 		btnSend = new JButton("Send");
 		btnDisconnect = new JButton("Disconnect");
@@ -162,5 +161,13 @@ public class Frame {
 	
 	public void recieveMessages(String user){
 		textPane.setText(con.loadMessages(user));
+	}
+	
+	public void receiveClients(String clients[]){
+		System.out.println("Clientlist updated:");
+		for(String s: clients){
+			userList.addItem(s);
+			System.out.println(s);
+		}
 	}
 }

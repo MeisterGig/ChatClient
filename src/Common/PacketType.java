@@ -1,5 +1,5 @@
 package Common;
 
 public enum PacketType {
-	MESSAGE, BROADCAST, SERVER, LOGIN, LOGOUT
+	MESSAGE, LOGIN, LOGOUT_BY_SERVER, LOGOUT, FILE
 }
