@@ -19,7 +19,7 @@ public class Converter {
 	}
 
 	public void sendMessage(String to, String message) {
-		addMessage(to, message);
+		addMessage(to, "<div align=\"right\">"+message+" </div> <br>");
 		frame.refreshMessages(to, loadMessages(to));
 		System.out.println(message);
 		// TODO 
@@ -27,6 +27,7 @@ public class Converter {
 	}
 	
 	public void addMessage(String user, String message){
+		String mes=loadMessages(user);
 		File file = new File("Chat/history/"+user+".chat"); // Alle Werte werden in eine log Datei gespeichert.
 		
 		try {
@@ -40,8 +41,11 @@ public class Converter {
 			}
 			
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			
+			writer.write(mes);
 			writer.write(message);
     	    writer.newLine();
+    	    writer.flush();
 			
 		} catch (IOException e) {
 			System.err.println("Es konnte keine Chat-Datei erstellt werden!");
@@ -74,7 +78,7 @@ public class Converter {
 			String messages="";
 			while((line = bufferedReader.readLine()) != null){
 				stringBuffer.append(line);
-				messages=messages+line+" <br>";
+				messages=messages+line;
 			}
 			fileReader.close();
 			

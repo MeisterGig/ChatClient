@@ -125,6 +125,7 @@ public class Frame {
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		        	File selectedFile = fileChooser.getSelectedFile();
 		        	con.sendFile((String) userList.getSelectedItem(),selectedFile.getPath());
+		        	System.err.println(selectedFile.getPath());
 		        }
 			}
 		});
