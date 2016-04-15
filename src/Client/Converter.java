@@ -33,12 +33,12 @@ public class Converter {
 	
 
 	public void receiveFile(String from, String path) {
-		addMessage(from, "<div color=\"blue\" align=\"right\">Datei bekommen unter: "+path+" </div> <br>");
+		addMessage(from, "<div color=\"red\" align=\"left\">Datei bekommen unter: "+path+" </div> <br>");
 		frame.refreshMessages(from, loadMessages(from));
 	}
 	
 	public void receiveMessage(String from, String message){
-		addMessage(from, "<div color=\"blue\" align=\"right\">"+message+" </div> <br>");
+		addMessage(from, "<div color=\"red\" align=\"left\">"+message+" </div> <br>");
 		frame.refreshMessages(from, loadMessages(from));
 	}
 	
