@@ -47,8 +47,8 @@ public class Frame {
 	public Frame() {
 		String ip = JOptionPane.showInputDialog("Server IP:");
 		String username = JOptionPane.showInputDialog("Username:");
-		con = new Converter(ip, username, this);
 		initialize();
+		con = new Converter(ip, username, this);
 	}
 
 	private void initialize() {
@@ -165,6 +165,7 @@ public class Frame {
 	
 	public void receiveClients(String clients[]){
 		System.out.println("Clientlist updated:");
+		userList.removeAllItems();
 		for(String s: clients){
 			userList.addItem(s);
 			System.out.println(s);
