@@ -60,6 +60,7 @@ public class Frame {
 		userList = new JComboBox();
 		
 		btnSend = new JButton("Send");
+		frmChat.getRootPane().setDefaultButton(btnSend);
 		btnDisconnect = new JButton("Disconnect");
 		btnAnhang = new JButton("Anhang");
 		
